@@ -7,8 +7,9 @@ import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.firestore.{FirestoreOptions, QueryDocumentSnapshot}
 import javax.inject.Inject
 import org.slf4j.LoggerFactory
-import models.MetricsSummary
 import play.api.Configuration
+import java.io.BufferedWriter
+import java.io.FileWriter
 
 import scala.collection.JavaConversions._
 import java.util.UUID.randomUUID
@@ -24,10 +25,35 @@ class UriDataStore @Inject()(config: Configuration) {
   val totalParamsCountKey = "totalParamsCount"
   val safeParamsCountKey = "safeParamsCount"
 
+  private val privateKeyId = scala.util.Properties.envOrElse("private_key_id", "")
+  private val privateKey = scala.util.Properties.envOrElse("private_key", "")
+  private val clientEmail = scala.util.Properties.envOrElse("client_email", "")
+  private val clientId = scala.util.Properties.envOrElse("client_id", "")
+  private val clientCertUrl = scala.util.Properties.envOrElse("client_x509_cert_url", "")
 
-  val f = new File("conf/dontrefmeKey.json")
+  private val createKeyFileData =
+    s"""
+       |{
+       |  "type": "service_account",
+       |  "project_id": "dontrefme",
+       |  "private_key_id": "${privateKeyId}",
+       |  "private_key": "${privateKey}",
+       |  "client_email": "${clientEmail}",
+       |  "client_id": "${clientId}",
+       |  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+       |  "token_uri": "https://oauth2.googleapis.com/token",
+       |  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+       |  "client_x509_cert_url": "${clientCertUrl}"
+       |}
+    """.stripMargin
+
+  final val tempFile = File.createTempFile("dontrefmeKey",".json")
+  final val writer: BufferedWriter = new BufferedWriter(new FileWriter(tempFile.getAbsolutePath))
+  writer.write(createKeyFileData)
+  writer.close()
+
   private val firebaseClient = FirestoreOptions.newBuilder()
-    .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream("conf/dontrefmeKey.json")))
+    .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(tempFile.getAbsolutePath)))
     .build().getService
 
   def createMetrics(host: String, totalParamsCount: Int, safeParamsCount: Int = 0): Boolean = {
