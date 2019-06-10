@@ -88,7 +88,7 @@ class UriEngine @Inject()(config: Configuration) {
   private def refRemoverWithRuleEngine(uriObj: URI, safeParamsList: List[String], removeRefFromUriEnd: Boolean = false): RemoveParamRes = {
     val queryParamsMap = getQueryParamsMap(uriObj)
     if (queryParamsMap.nonEmpty) {
-      val uriWithNoParams = getUriWithNoParam(uriObj)
+      val uriWithNoParams = getUriWithNoParam(uriObj, removeRefFromUriEnd)
       // Add filtered Params
       val safeParams = queryParamsMap.filter {
         case (k, _) => safeParamsList.contains(k)
