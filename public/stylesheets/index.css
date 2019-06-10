@@ -2,3 +2,8 @@
     width: 100%;
     margin-top: 20px;
 }
+
+hr {
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
