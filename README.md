@@ -28,3 +28,5 @@ For more information about using Play and Scala on Heroku, see these Dev Center 
 
 - [Play and Scala on Heroku](https://devcenter.heroku.com/categories/language-support#scala-and-play)
 
+
+Developed by Rushi Jash and Shivani Patel
