@@ -36,7 +36,7 @@ class UriEngine @Inject()(config: Configuration) {
       val refRemoverResponse = maybeHostTypeDetails match {
         case Some(hostTypeDetails) => {
           val hostDetails = hostTypeDetails._2
-          refRemoverWithRuleEngine(uriObj, hostDetails.safeParams)
+          refRemoverWithRuleEngine(uriObj, hostDetails.safeParams, hostDetails.removeRefFromStringEnd)
         }
         case None => refRemoverWithRuleEngine(uriObj, HostType.commonSafeParams)
       }
@@ -85,7 +85,7 @@ class UriEngine @Inject()(config: Configuration) {
     }
   }
 
-  private def refRemoverWithRuleEngine(uriObj: URI, safeParamsList: List[String]): RemoveParamRes = {
+  private def refRemoverWithRuleEngine(uriObj: URI, safeParamsList: List[String], removeRefFromUriEnd: Boolean = false): RemoveParamRes = {
     val queryParamsMap = getQueryParamsMap(uriObj)
     if (queryParamsMap.nonEmpty) {
       val uriWithNoParams = getUriWithNoParam(uriObj)
@@ -105,9 +105,13 @@ class UriEngine @Inject()(config: Configuration) {
     }
   }
 
-  private def getUriWithNoParam(uriObj: URI): String = {
+  private def getUriWithNoParam(uriObj: URI, removeRefFromUriEnd: Boolean = false): String = {
     val rawQuery = Option(uriObj.getRawQuery)
-    val uriString = uriObj.toString.replace("?", "")
+    var uriString = uriObj.toString.replace("?", "")
+    if(removeRefFromUriEnd) {
+      val indexofRef = uriString.indexOf("ref=")
+      uriString = uriString.substring(0, indexofRef)
+    }
     rawQuery.map(uriString.replace(_, "")).getOrElse(uriString)}
 
   private def getQueryParamsMap(uriObj: URI): Map[String, String] = {

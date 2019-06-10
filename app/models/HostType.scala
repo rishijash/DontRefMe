@@ -10,7 +10,7 @@ object HostType extends Enumeration {
   val hostMap = Map(
     Google -> HostDetails("google.com", List("q", "start")),
     Youtube -> HostDetails("youtube.com", List("search_query", "v")),
-    Amazon -> HostDetails("amazon.com", List("k")),
+    Amazon -> HostDetails("amazon.com", List("k"), removeRefFromStringEnd = true),
     Yahoo -> HostDetails("yahoo.com", List("p"))
   )
 
