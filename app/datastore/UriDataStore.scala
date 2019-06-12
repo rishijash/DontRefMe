@@ -13,7 +13,7 @@ import java.io.FileWriter
 
 import scala.collection.JavaConversions._
 import java.util.UUID.randomUUID
-
+import java.util.Calendar
 
 class UriDataStore @Inject()(config: Configuration) {
 
@@ -24,6 +24,7 @@ class UriDataStore @Inject()(config: Configuration) {
   val hostKey = "host"
   val totalParamsCountKey = "totalParamsCount"
   val safeParamsCountKey = "safeParamsCount"
+  val createdKey = "created"
 
   private val privateKeyId = scala.util.Properties.envOrElse("private_key_id", "")
   private val privateKey = scala.util.Properties.envOrElse("private_key", "")
@@ -58,8 +59,9 @@ class UriDataStore @Inject()(config: Configuration) {
 
   def createMetrics(host: String, totalParamsCount: Int, safeParamsCount: Int = 0): Boolean = {
     try {
+      val created = Calendar.getInstance().getTime().toString()
       val docData = new util.HashMap[String, Any](Map(hostKey -> host,
-        totalParamsCountKey -> totalParamsCount, safeParamsCountKey -> safeParamsCount))
+        totalParamsCountKey -> totalParamsCount, safeParamsCountKey -> safeParamsCount, createdKey -> created))
       val id = randomUUID().toString
       firebaseClient.collection(collectionName).document(id).set(docData)
       true
