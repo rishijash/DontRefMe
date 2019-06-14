@@ -3,15 +3,16 @@ package models
 object HostType extends Enumeration {
 
   type HostType = Value
-  val Google, Youtube, Amazon, Yahoo = Value
+  val Google, Youtube, Amazon, Yahoo, Facebook = Value
 
-  val commonSafeParams = List("g", "k", "p", "q", "v", "u")
+  val commonSafeParams = List("g", "k", "p", "q", "v")
 
   val hostMap = Map(
-    Google -> HostDetails("google.com", List("q", "start")),
-    Youtube -> HostDetails("youtube.com", List("search_query", "v")),
-    Amazon -> HostDetails("amazon.com", List("k"), removeRefFromStringEnd = true),
-    Yahoo -> HostDetails("yahoo.com", List("p"))
+    Google -> HostDetails("google.com", safeParams = List("q", "start")),
+    Youtube -> HostDetails("youtube.com", safeParams = List("search_query", "v")),
+    Amazon -> HostDetails("amazon.com", safeParams = List("k"), removeRefFromStringEnd = true),
+    Yahoo -> HostDetails("yahoo.com", safeParams = List("p")),
+    Facebook -> HostDetails("facebook.com", safeParams = List.empty, redirectParams = List("u"))
   )
 
   def withNameOpt(s: String): Option[Value] = values.find(_.toString == s)

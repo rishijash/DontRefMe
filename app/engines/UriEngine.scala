@@ -36,7 +36,7 @@ class UriEngine @Inject()(config: Configuration) {
       val refRemoverResponse = maybeHostTypeDetails match {
         case Some(hostTypeDetails) => {
           val hostDetails = hostTypeDetails._2
-          refRemoverWithRuleEngine(uriObj, hostDetails.safeParams, hostDetails.removeRefFromStringEnd)
+          refRemoverWithRuleEngine(uriObj, hostDetails.safeParams, hostDetails.removeRefFromStringEnd, hostDetails.redirectParams)
         }
         case None => refRemoverWithRuleEngine(uriObj, HostType.commonSafeParams)
       }
@@ -85,23 +85,33 @@ class UriEngine @Inject()(config: Configuration) {
     }
   }
 
-  private def refRemoverWithRuleEngine(uriObj: URI, safeParamsList: List[String], removeRefFromUriEnd: Boolean = false): RemoveParamRes = {
+  private def refRemoverWithRuleEngine(uriObj: URI,
+                                       safeParamsList: List[String],
+                                       removeRefFromUriEnd: Boolean = false,
+                                       redirectParams: List[String] = List.empty[String]): RemoveParamRes = {
     val queryParamsMap = getQueryParamsMap(uriObj)
-    if (queryParamsMap.nonEmpty) {
-      val uriWithNoParams = getUriWithNoParam(uriObj, removeRefFromUriEnd)
-      // Add filtered Params
-      val safeParams = queryParamsMap.filter {
-        case (k, _) => safeParamsList.contains(k)
+    val maybeRedirectParam = queryParamsMap.find(p => redirectParams.contains(p._1))
+    if(maybeRedirectParam.isEmpty) {
+      val (newUri, safeParamsSize) = if (queryParamsMap.nonEmpty) {
+        val uriWithNoParams = getUriWithNoParam(uriObj, removeRefFromUriEnd)
+        // Add filtered Params
+        val safeParams = queryParamsMap.filter {
+          case (k, _) => safeParamsList.contains(k)
+        }
+        val safeParamsStr = safeParams.map {
+          case (k, v) => s"${k}=${v}"
+        }.mkString("&")
+        val newUri = s"${uriWithNoParams}?${safeParamsStr}"
+        (newUri, safeParams.size)
+      } else {
+        // If no query params, no need to filter anything. Just call the requested URI
+        val newUri = uriObj.toString
+        (newUri, 0)
       }
-      val safeParamsStr = safeParams.map {
-        case (k, v) => s"${k}=${v}"
-      }.mkString("&")
-     val newUri = s"${uriWithNoParams}?${safeParamsStr}"
-      RemoveParamRes(newUri, uriObj.getHost, queryParamsMap.size, safeParams.size)
+      RemoveParamRes(newUri, uriObj.getHost, queryParamsMap.size, safeParamsSize)
     } else {
-      // If no query params, no need to filter anything. Just call the requested URI
-      val newUri = uriObj.toString
-      RemoveParamRes(newUri, uriObj.getHost, queryParamsMap.size, 0)
+      val newUriObj = new URI(maybeRedirectParam.get._2)
+      refRemoverWithRuleEngine(newUriObj, safeParamsList, removeRefFromUriEnd, List.empty)
     }
   }
 
