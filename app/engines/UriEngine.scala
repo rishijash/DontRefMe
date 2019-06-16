@@ -68,6 +68,10 @@ class UriEngine @Inject()(config: Configuration) {
   private def getUriObj[T](requestUri: String): Option[URI] = {
     try {
       var uri = requestUri
+      // If starts with space, just remove it
+      if(uri.startsWith("%20")) {
+        uri = uri.replaceFirst("%20", "")
+      }
       if (!uri.startsWith("http") && !uri.startsWith("https")) {
         uri = s"http://${uri}"
       }
