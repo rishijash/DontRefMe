@@ -3,7 +3,7 @@ package models
 object HostType extends Enumeration {
 
   type HostType = Value
-  val Google, Youtube, Amazon, Yahoo, Facebook, Instagram, AmazonDe = Value
+  val Google, Youtube, Amazon, Yahoo, Facebook, Instagram, AmazonDe, ProductHunt = Value
 
   val commonSafeParams = List("g", "k", "p", "q", "v")
 
@@ -14,6 +14,7 @@ object HostType extends Enumeration {
     AmazonDe -> HostDetails("amazon.de", safeParams = List("node", "k"), removeRefFromStringEnd = true),
     Yahoo -> HostDetails("yahoo.com", safeParams = List("p")),
     Instagram -> HostDetails("instagram.com", safeParams = List.empty, redirectParams = List("u")),
+    ProductHunt -> HostDetails("producthunt.com", safeParams = List("utm_source")),
     Facebook -> HostDetails("facebook.com", safeParams = List.empty, redirectParams = List("u"))
   )
 
